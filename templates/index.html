@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>Neyro•Prognoz</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns@3.0.0/dist/chartjs-adapter-date-fns.bundle.min.js"></script>
+    <script src="/static/chart.js?v=14" defer></script>
+
+    <!-- Подключаем шрифт Parisienne -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Parisienne&display=swap" rel="stylesheet">
+
+    <style>
+        body {
+            background-color: rgb(8, 8, 83);
+            color: rgb(232, 220, 194);
+            font-family: Arial, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px;
+        }
+
+        /* Анимации появления */
+        @keyframes fadeInDown {
+            from {
+                opacity: 0;
+                transform: translateY(-30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+            }
+            to {
+                opacity: 1;
+            }
+        }
+
+        @keyframes scaleIn {
+            from {
+                opacity: 0;
+                transform: scale(0.9);
+            }
+            to {
+                opacity: 1;
+                transform: scale(1);
+            }
+        }
+
+        h1 {
+            font-family: 'Parisienne', cursive;
+            font-weight: 300;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+            font-size: 48px;
+            color: #e8dcca;
+            margin-bottom: 30px;
+            letter-spacing: 1px;
+            animation: fadeInDown 0.8s ease-out;
+        }
+
+        #controls {
+            display: flex;
+            flex-direction: column;
+            width: 300px;
+            margin-bottom: 20px;
+            animation: fadeInUp 0.8s ease-out 0.2s backwards;
+        }
+
+        label {
+            margin-top: 10px;
+            margin-bottom: 5px;
+            font-size: 16px;
+        }
+
+        input, select {
+            padding: 8px;
+            font-size: 16px;
+            border-radius: 4px;
+            border: 1px solid #999;
+            transition: all 0.3s ease;
+        }
+
+        input:focus, select:focus {
+            outline: none;
+            border-color: #e8dcca;
+            box-shadow: 0 0 0 2px rgba(232, 220, 194, 0.2);
+        }
+
+        #forecast-btn {
+            font-family: Arial, sans-serif;
+            font-size: 18px;
+            padding: 10px 20px;
+            background-color: white;
+            color: #000000;
+            border: 1px solid #999999;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-top: 15px;
+        }
+
+        #forecast-btn:hover {
+            background-color: #e0e0e0;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        }
+
+        #forecast-btn:active {
+            transform: translateY(0);
+        }
+
+        #forecast-btn:disabled {
+            background-color: #cccccc;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        #chart-container {
+            width: 90%;
+            max-width: 1000px;
+            height: 500px;
+            background-color: white;
+            padding: 10px;
+            border-radius: 8px;
+            animation: scaleIn 0.8s ease-out 0.4s backwards;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+        }
+    </style>
+</head>
+<body>
+    <h1>Neyro•Prognoz</h1>
+
+    <div id="controls">
+        <label for="company">Выбор компании:</label>
+        <input list="companies" id="company" placeholder="Введите или выберите компанию">
+        <datalist id="companies">
+            <option value="Apple">
+            <option value="Microsoft">
+            <option value="Nvidia">
+            <option value="Amazon">
+            <option value="Alphabet (Google)">
+            <option value="Meta (Facebook)">
+            <option value="Tesla">
+            <option value="Berkshire Hathaway">
+            <option value="Visa">
+            <option value="JPMorgan Chase">
+            <option value="Walmart">
+            <option value="Mastercard">
+            <option value="Procter & Gamble">
+            <option value="Johnson & Johnson">
+            <option value="Home Depot">
+            <option value="Netflix">
+            <option value="Bank of America">
+            <option value="Coca-Cola">
+            <option value="Chevron">
+            <option value="Pfizer">
+            <option value="Intel">
+            <option value="Nike">
+            <option value="McDonald's">
+            <option value="Disney">
+            <option value="Cisco">
+        </datalist>
+
+        <label for="period">Выбор периода:</label>
+        <select id="period">
+            <option value="1 день">1 день</option>
+            <option value="1 неделя">1 неделя</option>
+            <option value="1 месяц">1 месяц</option>
+        </select>
+
+        <button id="forecast-btn">Прогноз</button>
+    </div>
+
+    <div id="chart-container">
+        <canvas id="chart" style="display: none;"></canvas>
+        <div id="welcome-message" style="display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100%; color: #666; text-align: center;">
+            <div style="font-size: 48px; margin-bottom: 20px;">📊</div>
+            <h2 style="color: #333; margin-bottom: 10px;">Добро пожаловать в Neyro•Prognoz</h2>
+            <p style="font-size: 16px; color: #666;">Выберите компанию и период, затем нажмите "Прогноз"</p>
+        </div>
+    </div>
+</body>
+</html>
